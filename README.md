@@ -1,2 +1,3 @@
-# receipt-printer
-Google scripts code to print receipts from a spreadsheet
+# Receipt Printer
+A google scripts Project to save a receipt sheet from a spreadsheet as a pdf.
+
