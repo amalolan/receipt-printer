@@ -7,19 +7,23 @@
 <!-- The sidebar will have all the buttons -->
 <div class="sidebar">     
   <div class="block form-group">
-      <h3>
+    <!-- Creator 
+    <h3>
         <font face="Arial" color="6495ed"> Created by amalolan </font> 
-      </h3> 
+    </h3> 
+    -->
     <p>
-      Carefully fill all these fields up without errors. Also, make sure you are on the sheet you want to print.<br />
-      Link to a tutorial which contains the exact info about each input box: 
-      <a href="https://docs.google.com/document/d/1n0K37hSGwkVaYo6iMhBdvBiNo2au_ghdci14LfqoUWM/edit?usp=sharing"> Tutorial </a> 
-      <br /> <b> <font color="red"> WARNING: DO NOT refresh or close the page/tab. Wait until the sidebar automatically closes. </font> </b>
+      Carefully fill all these fields up without errors. Make sure you are on the sheet you want to print.<br />
+      Link to a tutorial which contains the exact info about each input box: <br />
+      <a href="https://docs.google.com/document/d/1n0K37hSGwkVaYo6iMhBdvBiNo2au_ghdci14LfqoUWM/edit?usp=sharing"> Tutorial </a> and
+      <a href="https://github.com/amalolan/receipt-printer/">Github Page </a>
+      <br /> <!-- WARNING <b> <font color="red"> WARNING: DO NOT refresh or close the page/tab. Wait until the sidebar automatically closes. </font> </b> -->
+      Note that this is the receipt printer <b> WITHOUT Mail Merge </b>. To use mail merge go to Add Ons > Receipt Printer > Print with Mail Merge.
     </p>
-    <p>Enter the cell with the amount</p>
+    <p>Enter the cell with the amount. Enter "null" without quotes if you do not need to convert into words.</p>
     <input type="text" id="number" placeholder="Example: A1" />
     <br />
-    <p>Enter the cell to write in words</p>
+    <p>Enter the cell to write in words. Enter "null" without quotes if you do not need to convert into words.</p>
     <input type="text" id="amount" placeholder="Example: A1" />
     <br />
     <p>Enter the cell of the unique code</p>
@@ -28,14 +32,14 @@
     <p>Enter the last entry's Unique Code</p>
     <input type="number" id="final" placeholder="Enter final... " />
     <br />
-    <p>Enter the destination path for the reciepts</p>
+    <p>Enter the destination path for the reciepts.</p>
     <input type="text" id="path" placeholder="Ex: main/parent/child" />
     <br />
     <p>Enter the structure of the filename in the format: cell1,cell2,cell3 ... <br /> 
       The filename will be in the format: <br /> "cell1 cell2 cell3.. .pdf"</p>
     <input type="text" id="structure" placeholder="Ex: A1,A2,A3" />
     <br />
-    <p>Once you're done, hit finish. The sidebar will close on its own when the script finishes. <br />
+    <p>Once you're done, hit finish. The sidebar will automatically close after the script completes running. <br />
     <b> <font color="red">
       WARNING: DO NOT refresh or close the page/tab. Wait until the sidebar automatically closes.</font> </b>
     </p>
@@ -60,7 +64,11 @@ function finish()
   var structure = $('#structure').val();
   // Now calls the function finished() with the parameters using google.script.run
   google.script.run.withSuccessHandler(function(input) {
-    google.script.host.close();
+    google.script.run.withSuccessHandler(function(input) {
+        google.script.host.close();
+      }).endScript();
+  }).withFailureHandler(function() {
+    google.script.run.failed();
   }).finished(number, amount, uid, final, path, structure);
 }
 // When clicked, it executes the function finish.
