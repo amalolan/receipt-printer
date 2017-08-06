@@ -1,5 +1,9 @@
 // Gets the folder object given the path in the format root/parent/child/grandchild and so on.
 function getFolder(path) {
+    if (path === "null"){
+      Logger.log("No path given -- from getFolder()");
+      return null;
+    }
     var folder = getDriveFolder(path);    
     Logger.log(folder.getUrl());  
     return folder;  
