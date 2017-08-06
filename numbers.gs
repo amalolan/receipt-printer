@@ -1,6 +1,7 @@
 // Set's the final cell's value to the initial cell's amount in words
 function setINR(initial, final){
-  if (initial === "None"){
+  if (initial === "null"){
+    Logger.log("No need to convert into amount -- from setINR");
     return
   }
   var sheet = SpreadsheetApp.getActiveSheet();
