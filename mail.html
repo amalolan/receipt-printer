@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<!-- Use this CSS stylesheet to ensure that add-ons styling 
+     matches the default Google Docs styles -->
+<link href="https://ssl.gstatic.com/docs/script/css/add-ons.css"
+     rel="stylesheet"> 
+<!-- The sidebar will have all the buttons and input boxes-->
+<div class="sidebar">     
+  <!-- class receipt is the almost the same as that in sideBarPrinter.html -->
+  <div class="receipt">
+    <!-- Creator 
+    <h3>
+      <font face="Arial" color="6495ed"> Created by amalolan </font> 
+    </h3> 
+    -->
+    <p>
+      Carefully fill all these fields up without errors. Make sure you are on the sheet you want to print.<br />
+      Link to a tutorial which contains the exact info about each input box: <br />
+      <a href="https://docs.google.com/document/d/1n0K37hSGwkVaYo6iMhBdvBiNo2au_ghdci14LfqoUWM/edit?usp=sharing"> Tutorial </a> and
+      <a href="https://github.com/amalolan/receipt-printer/">Github Page </a>
+      <br /> <!-- WARNING  <b> <font color="brown"> WARNING: DO NOT refresh or close the page/tab. Wait until the sidebar automatically closes. </font> </b> -->
+      Also note that this is the receipt printer <b> WITH
+      Mail Merge </b>. To use without mail merge go to Add Ons > Receipt Printer > Print Receipts.
+    </p>
+    <b> <font color="6495ed"> MAKE SURE YOUR CURSOR IS ON THE RECEIPT PRINTING SHEET </font> </b>
+    <p>Enter the cell with the amount.Enter "null" without quotes if you do not need to convert into words.</p>
+    <input type="text" id="number" placeholder="Example: A1" />
+    <br />
+    <p>Enter the cell to write in words.Enter "null" without quotes if you do not need to convert into words.</p>
+    <input type="text" id="amount" placeholder="Example: A1" />
+    <br />
+    <p>Enter the cell of the unique code</p>
+    <input type="text" id="uid" placeholder="Example: A1" />
+    <br />
+    <p>Enter the last entry's Unique Code</p>
+    <input type="number" id="final" placeholder="Enter final... " />
+    <br />
+    <p>Enter the destination path for the reciepts.  Enter "null" without quotes if you do not want to save the files</p>
+    <input type="text" id="path" placeholder="Ex: main/parent/child" />
+    <br />
+    <p>Enter the structure of the filename in the format: cell1,cell2,cell3 ... <br /> 
+      The filename will be in the format: <br /> "cell1 cell2 cell3.. .pdf"</p>
+    <input type="text" id="structure" placeholder="Ex: A1,A2,A3" />
+    <br />
+    <p>Once you're done on this page hit next.<br />
+    <b> <font color="brown">
+      WARNING: DO NOT refresh or close the page/tab. Wait until the sidebar automatically closes.</font> </b>
+    </p>
+    <button class="blue" id="next">Next</button>
+    <br />
+  </div>
+  <!-- Class mailmerge is the new class for this html file -->
+  <div class="mailmerge">
+  <!-- Creator 
+    <h3>
+        <font face="Arial" color="6495ed"> Created by amalolan </font> 
+    </h3>
+    -->
+    <!-- WARNING 
+    <p> 
+      <b> <font color="brown">
+        WARNING: DO NOT refresh or close the page/tab. Wait until the sidebar automatically closes.
+      </font> </b>
+    </p>
+    -->
+    <p> 
+    Once you are ready, click the generate button to generate two sheets named <b> "Mail Merge" </b> and <b> "Text" </b> 
+    <br />
+    <b> MAKE SURE there are no other sheets with the same names </b>
+    </p>
+    <button class="blue" id="prev">Previous Page</button>
+    <button class="blue" id="generate">Generate Mail Merge Sheets</button>
+    <p id="wait"> <b> <font color="6495ed"> Please wait for a moment....</font> </b> </p>
+    <div class="rest">
+      <p> Now, fill in the sheet "Text". A1 will be the subject of the email and the A2 will be the Message. Note: To use variables, type them in this format:
+      <b> ${"Variable Name"} </b>
+      </p>
+      <p> Next, go to the "Mail Merge" sheet. The first row contain the titles. Use the same exact variable name you used in the message and fill in
+      all data. A sample Mail Merge spreadsheet can be viewed <a href="https://docs.google.com/spreadsheets/d/18m2rlBSqprhY6OUhtnegwzhatIryY6AM-S7WO2nquQM/edit?usp=sharing">here</a> 
+      </p>
+      <p> <b> <font color="red">
+        WARNING: DO NOT CHANGE THE NAME OF THE "email" COLUMN.The heading must be "email" and it must contain the emails of all the recipients.<br /> <br />
+        MAKE SURE that the column header names and the variable names from "Text" sheet ARE EXACTLY THE SAME (NO SPACES).
+        </font> </b>
+      </p>
+      <p>
+      Once you've filled up the data hit Finish. The sidebar will automatically close after the script completes running. <br/>
+      <b> <font color="6495ed"> MAKE SURE YOUR CURSOR IS ON THE RECEIPT PRINTING SHEET </font> </b> <br />
+      <b> <font color="brown">
+        DO NOT refresh or close the page/tab. Wait until the sidebar automatically closes.</font> </b> <br /> <br />
+      <button class="blue" id="finish">Finish</button>
+    </div>
+  </div>
+</div>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js">
+</script>
+
+<script> 
+$(document).ready(function(){
+  function finish()
+  {
+    // Initializes all the variables
+    var number =  $("#number").val();
+    var amount = $("#amount").val();
+    var uid = $("#uid").val();
+    var final = $('#final').val();
+    var path = $('#path').val();
+    var structure = $('#structure').val();
+    // Now calls the function finishedMail() with the parameters using google.script.run
+    google.script.run.withSuccessHandler(function(input) {
+      google.script.run.withSuccessHandler(function(input) {
+        google.script.host.close();
+      }).endScript();
+    }).withFailureHandler(function(input) {
+      google.script.run.failed();
+    }).finishedMail(number, amount, uid, final, path, structure);
+  }
+  // Hides rest,mailmerge, and wait initially
+  $(".mailmerge").hide();
+  $(".rest").hide(); 
+  $("#wait").hide();
+  // When clicked, it executes the function finish.
+  document.getElementById('finish').onclick = finish;  
+  // Goes to the next page i.e. hides receipt and shows mailmerge
+  $("#next").click(function() {  
+    $('.receipt').toggle();
+    $('.mailmerge').toggle();
+  });
+  // Goes back to the previous page i.e. hides mailmerge and shows receipt
+  $("#prev").click(function() { 
+    $('.receipt').toggle();
+    $('.mailmerge').toggle();
+  });
+  // When generate is clicked, calls generateSheetsForMail() which generates sheets "Mail Merge" and "Text"
+  $("#generate").click(function() {
+    $("#wait").show()
+    google.script.run.withSuccessHandler(function(input) {
+      $('.rest').show();
+      $("#generate").hide();
+      $("#wait").hide();
+    }).generateSheetsForMail();
+  });
+});
+
+
+</script>
+
