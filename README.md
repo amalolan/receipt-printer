@@ -1,5 +1,5 @@
 # Receipt Printer
-A Google Scripts Project to save a receipt sheet from a spreadsheet as a pdf.
+[A Google Sheets Add On](https://chrome.google.com/webstore/detail/receipt-printer/cehbnbbdejohaafojgklmhagflcgeopd?utm_source=permalink) to save a receipt sheet from a spreadsheet as a pdf.
 
 ## Inputs
 
