@@ -1,6 +1,13 @@
 # Receipt Printer
 [A Google Sheets Add On](https://chrome.google.com/webstore/detail/receipt-printer/cehbnbbdejohaafojgklmhagflcgeopd?utm_source=permalink) to save a receipt sheet from a spreadsheet as a pdf and email it.
 
+## How does it work?
+Receipt Printer uses a template in order to print the receipts. It loops through all the Unique Codes for each receipt one by one , makes a pdf of that receipt, emails them, and finally saves them onto the user's google drive.
+
+So, the template must contain a cell which has that unique code. This unique code is then incremented by 1 in each iteration of the algorithm. To make this work, you would  usually make the template such that the info in that template (First Name, Last Name, Date of Purchase, etc.) depends on that unique code cell to fetch its values (by using VLOOKUP() for example).
+
+Once it prints out that template sheet, for a certain iteration, it emails it to whomever required. And if it needs to be saved into the user's google drive, it does so.
+
 ## Inputs
 
 Once you load up the receipt printer with or without mail-merge,  you will see a side bar with 6 input boxes.<br>
@@ -51,15 +58,14 @@ Here is the description of each box:
 
 For a more in-depth tutorial, check out the [Tutorial](https://github.com/amalolan/receipt-printer/blob/master/Tutorial.md) file.
 
+## Limitations
 
-
-
-
+Receipt Printer does suffer from one big limitation: the number of emails sent in a day cannot exceed 100. If you use a CC or BCC, each extra email adds up to that 100. This, unfortunately, is not in our hands as it is a fixed quota set by Google.
 
 
 ## Credits
 
 
 * Amit Wilson for the [INR()](https://ctrlq.org/code/20098-indian-rupee-lakhs-crores-google-spreadsheet) function
-* Amit Agarwal or @labnol for [paths.gs](https://ctrlq.org/code/19925-google-drive-folder-path)
-* @kpgarrod for [generatePdf()](https://gist.github.com/ixhd/3660885) function
+* Amit Agarwal(@labnol) for [paths.gs](https://ctrlq.org/code/19925-google-drive-folder-path)
+* @kpgarrod for [pdfMail()](https://gist.github.com/ixhd/3660885) function

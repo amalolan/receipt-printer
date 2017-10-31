@@ -1,146 +1,404 @@
 <!DOCTYPE html>
-<!-- Use this CSS stylesheet to ensure that add-ons styling 
-     matches the default Google Docs styles -->
-<link href="https://ssl.gstatic.com/docs/script/css/add-ons.css"
-     rel="stylesheet"> 
+<html>
+<head>
+  <!-- Use this CSS stylesheet to ensure that add-ons styling
+         matches the default Google Docs styles -->
+  <link href="https://ssl.gstatic.com/docs/script/css/add-ons.css" rel="stylesheet">
+  <style>
+    input.required {
+      background-color: rgba(255, 154, 146, 0.3);
+
+    }
+    input.optional {
+      background-color: rgba(101, 191, 208, 0.15);
+    }
+
+    code {
+        font-family: monospace;
+        padding: 0;
+        padding-top: 0.2em;
+        padding-bottom: 0.2em;
+        margin: 0;
+        font-size: 0.9em;
+        background-color: rgba(27,31,35,0.05);
+        border-radius: 3px;
+     }
+
+    code.green {
+      background-color: rgba(41, 105, 29, 0.6);
+      color: white;
+    }
+
+    code.blue {
+      background-color: rgba(77, 144, 254, 0.8);
+      color: white;
+    }
+
+    code::before,
+    code::after {
+      letter-spacing: -0.2em;
+      content: "\00a0";
+    }
+
+    span.red {
+      color: #dd4b39;
+    }
+  </style>
+</head>
+<body>
 <!-- The sidebar will have all the buttons and input boxes-->
-<div class="sidebar">     
+<div class="sidebar">
   <!-- class receipt is the almost the same as that in sideBarPrinter.html -->
   <div class="receipt">
-    <!-- Creator 
-    <h3>
-      <font face="Arial" color="6495ed"> Created by amalolan </font> 
-    </h3> 
-    -->
     <p>
-      Carefully fill all these fields up without errors. Make sure you are on the sheet you want to print.<br />
-      Link to a tutorial which contains the exact info about each input box: <br />
-      <a href="https://docs.google.com/document/d/1n0K37hSGwkVaYo6iMhBdvBiNo2au_ghdci14LfqoUWM/edit?usp=sharing"> Tutorial </a> and
-      <a href="https://github.com/amalolan/receipt-printer/">Github Page </a>
-      <br /> <!-- WARNING  <b> <font color="brown"> WARNING: DO NOT refresh or close the page/tab. Wait until the sidebar automatically closes. </font> </b> -->
-      Also note that this is the receipt printer <b> WITH
-      Mail Merge </b>. To use without mail merge go to Add Ons > Receipt Printer > Print Receipts.
+      Link to a tutorial which contains a step-by-step guide:
+      <a href="https://amalolan.github.io/receipt-printer/tutorial.html" target="_blank"> Tutorial </a> and
+      <a href="https://github.com/amalolan/receipt-printer/" target="_blank">Github Page </a>
+      <br />
     </p>
-    <b> <font color="6495ed"> MAKE SURE YOUR CURSOR IS ON THE RECEIPT PRINTING SHEET </font> </b>
-    <p>Enter the cell with the amount.Enter "null" without quotes if you do not need to convert into words.</p>
-    <input type="text" id="number" placeholder="Example: A1" />
-    <br />
-    <p>Enter the cell to write in words.Enter "null" without quotes if you do not need to convert into words.</p>
-    <input type="text" id="amount" placeholder="Example: A1" />
-    <br />
-    <p>Enter the cell of the unique code</p>
-    <input type="text" id="uid" placeholder="Example: A1" />
-    <br />
-    <p>Enter the last entry's Unique Code</p>
-    <input type="number" id="final" placeholder="Enter final... " />
-    <br />
-    <p>Enter the destination path for the reciepts.  Enter "null" without quotes if you do not want to save the files</p>
-    <input type="text" id="path" placeholder="Ex: main/parent/child" />
-    <br />
-    <p>Enter the structure of the filename in the format: cell1,cell2,cell3 ... <br /> 
-      The filename will be in the format: <br /> "cell1 cell2 cell3.. .pdf"</p>
-    <input type="text" id="structure" placeholder="Ex: A1,A2,A3" />
-    <br />
-    <p>Once you're done on this page hit next.<br />
-    <b> <font color="brown">
-      WARNING: DO NOT refresh or close the page/tab. Wait until the sidebar automatically closes.</font> </b>
+    <p>
+      Choose the sheet which has the receipt: <br> <br>
+      <select class="activesheet">
+      </select>
+      <a href="https://amalolan.github.io/receipt-printer/help.html" target="_blank" id="help" class="blue button" style="margin-right: 14px; float: right;">Help</a>
     </p>
-    <button class="blue" id="next">Next</button>
+    <h3 style="margin-bottom: 0.5em;"> Guidelines </h3>
+    <ul style="margin-top: 0.25em; padding-left: 20px; padding-right: 40px;">
+      <li><span style="color: rgba(255, 154, 146, 1);">Red box</span> ⇒ Compulsory</li>
+      <li><span style="color: rgba(101, 191, 208, 1);">Green box</span> ⇒ Optional</li>
+      <li>For most input boxes, click on the box and then a cell in your sheet.</li>
+      <li><b>Any</b> keypress will halt auto fetching.</li>
+      <li>Press the <code> Del </code> key to reset a cell</li>
+      <li>Press the <code> Esc </code> key to skip a cell or..</li>
+      <li>Press <code class="green">Skip</code> to skip the optional field</li>
+      <li>Press <code class="green">Next</code> to move to the next field</li>
+      <li>Amount in words is limited to Indian Currency</li>
+      <li>Script starts with no. in the Unique Code cell</li>
+      <li>Click <code class="blue">Help</code> if you need more info.</li>
+    </ul>
+    <div class="number">
+      <p> Cell with an amount to convert into words. <code class="green">Skip</code> if you do not need to convert into words.</p>
+      <input type="text" id="number" placeholder="Example: A1" class="fetch optional" />
+      <button class="green skip next">Skip</button>
+      <br />
+    </div>
+    <div class="amount">
+      <p> Cell to write number into words.</p>
+      <input type="text" id="amount" placeholder="Example: A1" class="fetch optional" />
+      <button class="green skip prev">Skip</button>
+      <br />
+    </div>
+    <div class="uid">
+      <p> Cell of the unique code</p>
+      <input type="text" id="uid" placeholder="Example: A1" class="fetch required" />
+      <button class="green required">Next</button>
+      <br />
+    </div>
+    <div class="final">
+      <p> Final entry's Unique Code</p>
+      <input type="number" id="final" placeholder="Enter final... " class="fetchData required" />
+      <button class="green required">Next</button>
+      <br />
+    </div>
+    <div class="path">
+      <p> <b>Type in</b> the destination path for the reciepts. <code class="green">Skip</code> if you do not want to save the files.</p>
+      <input type="text" id="path" placeholder="Ex: main/parent/child" class="optional" />
+      <button class="green skip path">Skip</button>
+      <br />
+    </div>
+    <div class="structure">
+      <p> <b>Type in</b> the structure of the filename in the format: <br> <code> cell1,cell2, ... </code>
+        <br /> The filename will be in the format: <br> <code>cell1 cell2 ... .pdf</code> <br>
+        <code class="green">Skip</code> to autoname</p>
+      <input type="text" id="structure" placeholder="Ex: A1,A2,A3" class="fetchName optional" />
+      <button class="green skip">Skip</button>
+      <br />
+    </div>
+    <div class="optMM">
+    <p>If you do not need mail merge, hit finish. Else, go to mail merge.
+      <br />
+    </p>
+    <button class="blue" id="nextNormal">Go to Mail Merge</button>
+    <button class="blue" id="finishNormal">Finish</button>
+    </div>
+    <div class="MM">
+      <p> Once you're done, proceed to the next page. </p>
+      <button class="blue" id="next">Go to Mail Merge</button>
+    </div>
     <br />
   </div>
   <!-- Class mailmerge is the new class for this html file -->
   <div class="mailmerge">
-  <!-- Creator 
-    <h3>
-        <font face="Arial" color="6495ed"> Created by amalolan </font> 
-    </h3>
-    -->
-    <!-- WARNING 
-    <p> 
-      <b> <font color="brown">
-        WARNING: DO NOT refresh or close the page/tab. Wait until the sidebar automatically closes.
-      </font> </b>
+    <p>
+      Click the generate button to generate two sheets named <code>Mail Merge</code> and <code>Text</code>
+      <br />
+      <b style="color: #6495ed"> Only these sheets will be used by the script.</b>
     </p>
-    -->
-    <p> 
-    Once you are ready, click the generate button to generate two sheets named <b> "Mail Merge" </b> and <b> "Text" </b> 
-    <br />
-    <b> MAKE SURE there are no other sheets with the same names </b>
-    </p>
-    <button class="blue" id="prev">Previous Page</button>
+    <button class="blue" id="prev1">Previous Page</button>
     <button class="blue" id="generate">Generate Mail Merge Sheets</button>
+    <button class="red" id="debug">Debug</button>
     <p id="wait"> <b> <font color="6495ed"> Please wait for a moment....</font> </b> </p>
     <div class="rest">
-      <p> Now, fill in the sheet "Text". A1 will be the subject of the email and the A2 will be the Message. Note: To use variables, type them in this format:
-      <b> ${"Variable Name"} </b>
+      <p> Now, fill in the sheet <code>Text</code>. <code>A1</code> is the subject of the email and the
+        <code>A2</code> is the Message. <br />Note: To use variables, type them in this format:
+        <b> <code> ${Variable Name} </code> </b>
       </p>
-      <p> Next, go to the "Mail Merge" sheet. The first row contain the titles. Use the same exact variable name you used in the message and fill in
-      all data. A sample Mail Merge spreadsheet can be viewed <a href="https://docs.google.com/spreadsheets/d/18m2rlBSqprhY6OUhtnegwzhatIryY6AM-S7WO2nquQM/edit?usp=sharing">here</a> 
+      <p> Next, go to the <code>Mail Merge</code> sheet. The first row contain the titles. Use the
+        same <b> exact </b> variable name you used in the message and fill in all data. A
+        sample Mail Merge spreadsheet can be viewed <a href="https://docs.google.com/spreadsheets/d/18m2rlBSqprhY6OUhtnegwzhatIryY6AM-S7WO2nquQM/edit?usp=sharing">here</a>.
       </p>
-      <p> <b> <font color="red">
-        WARNING: DO NOT CHANGE THE NAME OF THE "email" COLUMN.The heading must be "email" and it must contain the emails of all the recipients.<br /> <br />
-        MAKE SURE that the column header names and the variable names from "Text" sheet ARE EXACTLY THE SAME (NO SPACES).
-        </font> </b>
+      <p style="color: #6495ed"><b>Due to gmail's quota restrictions, you can send only 100 emails a day.</b>
+      </p>
+      <!--
+      <p>
+        The email column <b>can only have one email</b>. Use the <code>cc</code> or <code>bcc</code> column to send to more than one person. Separate each email in the <code>cc</code> and <code>bcc</code> columns by <b>commas only</b>.
+      </p>
+      -->
+      <p> <b>
+        <span class="red">WARNING: DO NOT CHANGE THE NAMES OF THE <code>email</code>,<code>cc</code>,<code>bcc</code> COLUMNS.</span> These must contain emails of all the recipients and each email must be separated by a comma.<br /> <br />
+        MAKE SURE that the column header names and the variable names from <code>Text</code> sheet <span class="red">ARE EXACTLY THE SAME (NO EXTRA SPACES).</span>
+        </b>
       </p>
       <p>
-      Once you've filled up the data hit Finish. The sidebar will automatically close after the script completes running. <br/>
-      <b> <font color="6495ed"> MAKE SURE YOUR CURSOR IS ON THE RECEIPT PRINTING SHEET </font> </b> <br />
-      <b> <font color="brown">
-        DO NOT refresh or close the page/tab. Wait until the sidebar automatically closes.</font> </b> <br /> <br />
-      <button class="blue" id="finish">Finish</button>
+        <b>Also, MAKE SURE that the Unique ID column is in the <span class="red">FIRST POSITION</span> and is <span class="red">SORTED.</span></b>
+      </p>
+      <p>
+        Once you've filled up the data hit <code>Finish</code>. The sidebar will automatically close after
+        the script completes running.
+      </p>
+        <br />
+        <button class="blue" id="prev2">Previous Page</button>
+        <button class="blue" id="finish">Finish</button>
     </div>
   </div>
 </div>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js">
-</script>
 
-<script> 
-$(document).ready(function(){
-  function finish()
-  {
-    // Initializes all the variables
-    var number =  $("#number").val();
-    var amount = $("#amount").val();
-    var uid = $("#uid").val();
-    var final = $('#final').val();
-    var path = $('#path').val();
-    var structure = $('#structure').val();
-    // Now calls the function finishedMail() with the parameters using google.script.run
-    google.script.run.withSuccessHandler(function(input) {
-      google.script.run.withSuccessHandler(function(input) {
-        google.script.host.close();
-      }).endScript();
-    }).withFailureHandler(function(input) {
-      google.script.run.failed();
-    }).finishedMail(number, amount, uid, final, path, structure);
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
+<script>
+$(document).ready(function () {
+  function finishBoth(sendEmail) {
+      // Initializes all the variables
+      var number = $("#number").val().replace(/\s/g, "");
+      var amount = $("#amount").val().replace(/\s/g, "");
+      var uid = $("#uid").val().replace(/\s/g, "");
+      var final = $('#final').val().replace(/\s/g, "");
+      var path = $('#path').val();
+      var structure = $('#structure').val().replace(/\s/g, "");
+      var activeSheet = $('.activesheet').val();
+      // Switches to the active sheet
+      google.script.run.withSuccessHandler(function (input) {
+        // Now calls the function finishedMail() with the parameters using google.script.run
+        google.script.run.withSuccessHandler(function (input) {
+          google.script.run.withSuccessHandler(function (input) {
+            google.script.host.close();
+          }).endScript();
+        }).withFailureHandler(function (input) {
+          if (input.message !== "shown") {
+            google.script.run.failed();
+          }
+        }).finished(number, amount, uid, final, path, structure, sendEmail);
+      }).withFailureHandler(function (input) {
+        google.script.run.failed("Couldn't switch to the receipt template sheet. Please retry or try again later.");
+      }).setAsActive(activeSheet);
   }
-  // Hides rest,mailmerge, and wait initially
+
+  // Hides these initially
   $(".mailmerge").hide();
-  $(".rest").hide(); 
+  $(".rest").hide();
   $("#wait").hide();
-  // When clicked, it executes the function finish.
-  document.getElementById('finish').onclick = finish;  
+  $(".MM").hide();
+
+  // When clicked, it executes finish() depending on which button is clicked.
+  $("#finish").click(function () {
+    finishBoth(true);
+  });
+
+  $("#finishNormal").click(function () {
+    finishBoth(false);
+  });
+
   // Goes to the next page i.e. hides receipt and shows mailmerge
-  $("#next").click(function() {  
+  $("#next, #nextNormal").click(function () {
     $('.receipt').toggle();
     $('.mailmerge').toggle();
   });
   // Goes back to the previous page i.e. hides mailmerge and shows receipt
-  $("#prev").click(function() { 
+  $("#prev1, #prev2").click(function () {
     $('.receipt').toggle();
     $('.mailmerge').toggle();
   });
   // When generate is clicked, calls generateSheetsForMail() which generates sheets "Mail Merge" and "Text"
-  $("#generate").click(function() {
-    $("#wait").show()
-    google.script.run.withSuccessHandler(function(input) {
+  $("#generate").click(function () {
+    $("#wait").show();
+    google.script.run.withSuccessHandler(function (input) {
       $('.rest').show();
       $("#generate").hide();
+      $("#prev1").hide();
       $("#wait").hide();
     }).generateSheetsForMail();
   });
+
+  // Debugging button
+  $("#debug").click(function() {
+    $("#number").val("C13");
+    $("#amount").val("F13");
+    $("#uid").val("I5");
+    $('#final').val(1460);
+    $('#path').val("Add-On/Receipts");
+    $('#structure').val("I5, C7");
+    $('.rest').show();
+    $("#prev1").hide();
+    $("#generate").hide();
+    $(this).hide();
+  });
 });
 
+</script>
+<script>
+// Get all the sheets in the spreadsheet and add it to the .activesheet drop-down list
+google.script.run.withSuccessHandler(function(names) {
+  var appending = "";
+  $.each(names, function (i, item) {
+    appending += '<option value="' + item + '">' + item + '</option>';
+  });
+  $('.activesheet').append(appending);
+}).allSheets();
+
+var id, cell, cont;
+$(".fetch").click(function () {
+  id = this.id;
+  cell = 1;
+  var button = $(this).parent().closest('div').find("button");
+  $(button).html("Next");
+  $(button).removeClass("skip");
+  cont = true;
+  poll();
+});
+
+$(".optional").click(function() {
+  var button = $(this).parent().closest('div').find("button");
+  $(button).html("Next");
+  $(button).removeClass("skip");
+});
+
+$(".fetch, .fetchData").on("keydown", function(e) {
+  id = this.id;
+  cont = false;
+  if (e.which === 46 || e.which == 27)
+    $(this).val("");
+});
+
+$(".optional").on('keydown', function(e) {
+  cont = false;
+  id = this.id;
+  var button = $(this).parent().closest('div').find("button");
+  if (e.which === 46) {
+    $(this).val("");
+    $(button).html("Skip");
+    $(button).addClass("skip");
+  }
+  else if (e.which === 27){
+    $(this).val("");
+    $(button).addClass("skip");
+    $(button).click();
+  }
+  else {
+    $(button).html("Next");
+    $(button).removeClass("skip");
+  }
+});
+
+$(".fetchData").click(function () {
+  id = this.id;
+  cell = 0;
+  var button = $(this).parent().closest('div').find("button");
+  $(button).html("Next");
+  $(button).removeClass("skip");
+  cont = true;
+  poll();
+});
+
+$(".fetchName").click(function () {
+  var button = $(this).parent().closest('div').find("button");
+  $(button).html("Save");
+  $(button).removeClass("skip");
+});
+
+$(".fetchName").on('keydown', function(e) {
+  id = this.id;
+  var button = $(this).parent().closest('div').find("button");
+  if (e.which === 46) {
+    $(this).val("");
+    $(button).html("Skip");
+    $(button).addClass("skip");
+  }
+  else if (e.which === 27){
+    $(this).val("");
+    $(button).addClass("skip");
+    $(button).click();
+  }
+  else {
+    $(button).html("Save");
+    $(button).removeClass("skip");
+  }
+});
+
+$(".green").click(function () {
+  cont = false;
+  if ($(this).hasClass("skip")) {
+    if ($(this).hasClass("next")) {
+      $(this).parent().next('div').find('input').val("");
+      $(this).parent().next('div').hide();
+    }
+    if ($(this).hasClass("prev")) {
+      $(this).parent().prev('div').find('input').val("");
+      $(this).parent().prev('div').hide();
+    }
+    if ($(this).hasClass("path")) {
+      $(".optMM").hide();
+      $(".MM").show();
+    }
+    $(this).parent().closest('div').hide();
+  } else if ($(this).hasClass("required")){
+    if ($(this).parent().closest('div').find("input").val() == ""){
+      google.script.run.failed("Please enter a value into the red input box");
+    }
+    else {
+      $(this).parent().next('div').find('input').trigger("click");
+      $(this).parent().next('div').find('input').focus();
+    }
+  } else {
+    $(this).parent().next('div').find('input').trigger("click");
+    $(this).parent().next('div').find('input').focus();
+  }
+});
+
+/*
+Poll a server-side function at the given interval, to have
+results passed to a successHandler callback.
+*/
+function poll() {
+  var interval = 1;
+  setTimeout(function () {
+    google.script.run
+      .withSuccessHandler(showRecord)
+      .getRecord(cell);
+  }, interval);
+}
+
+/**
+ * Callback function to display a "record", or row of the spreadsheet.
+ *
+ * @param {object[]}  Array of field headings & cell values
+ */
+function showRecord(data) {
+  if (id && cont) {
+    $("#" + id).val(data);
+  }
+  poll();
+}
 
 </script>
-
+</body>
+</html>

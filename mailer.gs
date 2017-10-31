@@ -1,146 +1,174 @@
 // This is the mailer's main file
-function testfinishedMail(){
-  finishedMail("C13", "F13", "I5", 1456, "Add-On/Reciepts", "I5,C7");
+
+function testfinished(){
+//  finished("C13", "F13", "I5", 1456, "Add-On/Receipts", "I5,C7", true);
   SpreadsheetApp.getActiveSheet().getRange("I5").setValue(1455);
+  Logger.log(MailApp.getRemainingDailyQuota());
 }
 
-// This is called by mail.html once the user click on the Finish button
-function finishedMail(number, amount, uid, final, path, structure){
-  Logger.log("Reached mail merge finish");
+function finished(number, amount, uid, final, path, structure, sendEmail) {
+  /*
+  Inputs:
+      number: String: Cell with the amount
+      amount: String: Cell to write amount in words
+      uid: String: Cell of the unique code
+      final: Number: Last entry's unique code
+      path: String: Destination path for the files created
+      structure: String: Structure of filename (ex: I5,C7 will result a filename: val(I5) + val(C7) + '.pdf')
+      sendEmail: Boolean: true if an email with the file as attachment should be sent, false otherwise
+
+  This is called by mail.html once the user click on the Finish button. It handles everything after the user input stage
+  */
+  var struct = null;
+  if (SpreadsheetApp.getActiveSheet().getRange(uid) == "") {
+    failed("ERROR in Unique Code cell in your sheet. Please enter the Unique Code from which you want to start printing.");
+    throw "shown";
+  }
+  if (structure) {
+     struct = structure.split(",");
+  }
   var folder = getFolder(path);
-  var struct = structure.split(",");
-  // Hide sheets
-  hide();
-  // Call to the looper
-  looperMail(number, amount, uid, final, folder, struct);
-  // Unhides sheets
-  unhide();
-  
+  var varsLocs = getMailVars(SpreadsheetApp.getActive().getRange(uid).getValue(), ["email","cc","bcc"]);
+  if (Object.keys(varsLocs).length < 4) {
+    failed("ERROR In email, cc, or bcc column's name in the Mail Merge sheet. Have you changed their names?");
+    throw "shown";
+  }
+  if (varsLocs["uid"] == -1) {
+    failed("ERROR: Starting Unique Code not in the first column of the Mail Merge Sheet.");
+    throw "shown";
+  }
+  hide(); // Hide sheets
+  looper(number, amount, uid, final, folder, struct, sendEmail, varsLocs); // Call to the looper
+  unhide();  // Unhides sheets
 }
 
+function looper(number, amount, uid, final, folder, struct, sendEmail, varsLocs) {
+  /*
+  Inputs: same as finished() except for:
+          struct: an array of all the cells previously comma-separated.
+          folder: the folder object from the earlier path.
+          varsLocs: an object consisting of the indices of the variables required for emailing.
 
-// The looper which iterates through all the unique numbers
-function looperMail(number, amount, uid, final, folder, struct) {
-  Logger.log("Reached looperMail");
-  var sheet = SpreadsheetApp.getActiveSheet();
-  // Get the cell with the uid
-  var cell = sheet.getRange(uid);
-  // Start by getting the amount in words into the amount cell.
-  setINR(number, amount);
-  var value;
-  // Loop until you reach final+1
-  while (cell.getValue() <= final){
-    value = cell.getValue();
+  The looper which iterates through all the unique numbers and calls pdfMail() on all of them
+  */
+  var filenameCount = 1,  // The number to use to name a file if no struct is given
+      ss = SpreadsheetApp.getActive(),
+      sheet = SpreadsheetApp.getActiveSheet(),
+      cell = sheet.getRange(uid),  // Get the cell with the uid
+      value = cell.getValue(),
+      mailing = {};  // This object is passed onto email()
+  mailing.varsLocs = varsLocs;
+  mailing.data = ss.getSheetByName("Mail Merge").getDataRange().getValues();  // This data object is used by createTextFromTemplate() and email()
+  mailing.template = ss.getSheetByName("Text").getRange("A2").getValue();  // The template the user entered in the Text sheet
+  mailing.subject = ss.getSheetByName("Text").getRange("A1").getValue();   // The subject the user entered
+
+  while (value <= final) {  // Loop until you reach final+1
+    // Set the amount in words
+    setINR(number, amount);
     var filename = "";
-    // Get the filename using the structure parameter
-    for (var i = 0; i<struct.length; i++){
-      // Add a space and the corresponding cell's value according to struct
-      filename += sheet.getRange(struct[i]).getValue()+" ";
-    }
-    // Remove the last space
-    filename = filename.substring(0, filename.length - 1);
-    // Call to generate the pdf using this filename and the given path
-    pdfMail(folder, filename, value);
-    // Once generated, change the UID to the next value
-    cell.setValue(value+1); 
-    // Get the amount in words
-    setINR(number, amount);   
-  }
-  Logger.log("Finished Loop at looperMail");
-}
-
-// The pdf generator
-function pdfMail(folder, filename, id){
-  Logger.log("Creating PDF "+filename);
-  var ss = SpreadsheetApp.getActive();
-  // Creates the pdf file and puts it in attach
-  var pdfFile = DriveApp.getFileById(ss.getId()),
-      pdf = pdfFile.getAs('application/pdf').getBytes(),
-      attach = {fileName:filename+".pdf",content:pdf, mimeType:'application/pdf'};
-  // Calls email
-  email(attach, id);
-  // Save to pdf
-  if (folder === null){
-    Logger.log("No folder given-- from pdfMail");
-    return null;
-  }
-  var theBlob = ss.getBlob().getAs('application/pdf').setName(filename);
-  var newFile = folder.createFile(theBlob);
-}
-
-// The heart of this file
-// This is the mailing function which sends the mail to the recipients with the attachment attach.
-function email(attach, id){
-  Logger.log("Reached email");
-  // Initializes the variables used.
-  var ss = SpreadsheetApp.getActive(),
-      sheet = ss.getSheetByName("Mail Merge"),
-      data = sheet.getDataRange().getValues(),
-      template = ss.getSheetByName("Text").getRange("A2").getValue(),
-      subject = ss.getSheetByName("Text").getRange("A1").getValue(),
-      message, emailTo;
-  Logger.log(template);
-  Logger.log(subject);
-  var templateVars = template.match(/\$\{\"[^\"]+\"\}/g);
-  Logger.log(templateVars);
-  for (var i=0; i < data.length; i++){
-    if (data[i][0] === id){
-      for (var j=0; j < data[0].length; j++){
-        if (data[0][j] == "email"){
-          emailTo = data[i][j];
-          // If there is no email address, stops running.
-          if (emailTo === null || emailTo === ""){
-            return null;
-          }
-          message = createTextFromTemplate(template, data[i], data[0]);
-          subject = createTextFromTemplate(subject, data[i], data[0]);
-          Logger.log('message created from row '+ (i+1) +': '+emailTo);
-          MailApp.sendEmail(emailTo, subject, message, {attachments:[attach]});
+    if (struct) {
+      // Get the filename using the structure parameter if there is a given structure
+      for (var i = 0; i<struct.length; i++){
+        // Add a space and the corresponding cell's value according to struct
+        try {
+          filename += sheet.getRange(struct[i]).getValue()+" ";
+        }
+        catch(e) {
+          failed("ERROR in structure of the filename input box.Please enter valid cells in it");
+          throw "shown";
         }
       }
+      // Remove the last space
+      filename = filename.substring(0, filename.length - 1);
     }
+    else {
+      // just name it document along with a number to make its name unique
+      filename = "document" + filenameCount;
+      filenameCount++;
+    }
+    // Call to generate the pdf using this filename and the given path
+    pdfMail(folder, filename, value, sendEmail, mailing);
+    // Once generated, change the UID to the next value
+    value++;
+    mailing.varsLocs["uid"]++;
+    cell.setValue(value);
   }
 }
 
-// Generates all the required sheets for mail merge.
-function generateSheetsForMail(){
-  Logger.log("Reached generator");
-  if (SpreadsheetApp.getActive().getSheetByName("Mail Merge") != null){
-    var sheet = SpreadsheetApp.getActive().getSheetByName("Mail Merge");
-    SpreadsheetApp.getActive().deleteSheet(sheet);
+//
+function pdfMail(folder, filename, id, sendEmail, mailing){
+  /*
+  Inputs:
+      folder: A folder object of the dest. folder
+      filename: String: the name of the pdf file
+      id: Number: the current unique code
+      sendEmail: Boolean: whether or not an email with the pdf should be sent
+      mailing: An object passed onto email(). See email() for more info
+
+  The pdf generator. Makes a pdf and then emails it and saves it if necessary
+  */
+  var ss = SpreadsheetApp.getActive();
+  // Creates the pdf blob
+  var pdfFile = DriveApp.getFileById(ss.getId()),
+      pdf = pdfFile.getAs('application/pdf');
+  pdf.setName(filename);
+  // Calls email if it should send an email
+  if (sendEmail) {
+    email(pdf, id, mailing);
   }
-  // Generates sheet "Mail Merge"
-  var mm = SpreadsheetApp.getActiveSpreadsheet().insertSheet("Mail Merge");
-  var row1 = mm.getRange(1, 1, 1, 26);
-  row1.setVerticalAlignment("middle");
-  row1.setHorizontalAlignment("center");
-  row1.setBackgroundRGB(100,149,237);
-  row1.setFontStyle("Trebuchet MS");
-  row1.setFontColor("White");
-  mm.setRowHeight(1, 32);
-  mm.getRange("A1").setValue("Unique ID");
-  mm.getRange("B1").setValue("First Name");
-  mm.getRange("C1").setValue("Last Name");
-  mm.getRange("D1").setValue("email");
-  mm.setFrozenRows(1);
-  if (SpreadsheetApp.getActive().getSheetByName("Text") != null){
-    var sheet = SpreadsheetApp.getActive().getSheetByName("Text");
-    SpreadsheetApp.getActive().deleteSheet(sheet);
+  // Save to pdf if folder is given by the user
+  if (folder !== null) {
+    var newFile = folder.createFile(pdf);
   }
-  // Generates sheet "Text"
-  var text = SpreadsheetApp.getActiveSpreadsheet().insertSheet("Text");
-  text.deleteRows(3, text.getMaxRows()-2);
-  Logger.log(text.getLastRow());
-  Logger.log(text.getLastColumn());
-  text.deleteColumns(2, text.getMaxColumns()-1);
-  text.getRange("A1").setValue("Enter Subject...");
-  text.getRange("A2").setValue("Enter Message...");
-  text.setRowHeight(1, 32);
-  text.setRowHeight(2, 400);
-  text.setColumnWidth(1, 450);
-  text.getRange("A1").setHorizontalAlignment("left");
-  text.getRange("A1").setVerticalAlignment("top");
-  text.getRange("A2").setHorizontalAlignment("left");
-  text.getRange("A2").setVerticalAlignment("top");
 }
- 
+
+
+function email(attach, id, mailing){
+  /*
+  Inputs:
+      attach: A blob containing the pdf
+      id: the current unique code in use (ex: 1456)
+      mailing: an object passed on from looper(). It contains:
+        varsLocs: an object consisting of the indices of the variables required for emailing. ex: {uid: 2, email:3, cc:4, bcc:5}
+        data: the data of the Mail Merge sheet as a 2D array
+        template: the template for sending emails
+        subject: the subject of those emails
+
+  The heart of this file is the email function
+  This is the mailing function which sends the mail to the recipients with the attachment attach.
+  */
+  // Initializes the variables used.
+  var subject, message, emails, emailTo, options, cc, bcc, currRow;
+  currRow = mailing.varsLocs["uid"];
+  if (mailing.data[currRow][0] !== id) {
+    failed("ERROR: Unique Code for row" + mailing.uid + " not in the first row of the Mail Merge sheet!");
+    return;
+  }
+  message = createTextFromTemplate(mailing.template, mailing.data[currRow], mailing.data[0]);
+  subject = createTextFromTemplate(mailing.subject, mailing.data[currRow], mailing.data[0]);
+  emails = mailing.data[currRow][mailing.varsLocs["email"]].replace(/\s/g, "").split(",");
+  emailTo = emails[0];
+  if (emailTo === null || emailTo === ""){
+    failed("ERROR: ID " + id + " has no corresponding email.");
+    return;
+  }
+  cc = mailing.data[currRow][mailing.varsLocs["cc"]].replace(/\s/g, "");
+  for (var i = 1; i < emails.length; i++) {
+    cc +=","+ emails[i];
+  }
+  bcc = mailing.data[currRow][mailing.varsLocs["bcc"]].replace(/\s/g, "");
+  options = {attachments:[attach], cc: cc, bcc: bcc};
+  try {
+    MailApp.sendEmail(emailTo, subject, message, options);
+    /*
+      Logger.log("Sending emailTo: " + emailTo + " with subject: " + subject + " with options: ")
+      Logger.log(options);
+      Logger.log("\n");
+      Logger.log(message);
+    */
+  }
+  catch(e) {
+    failed("Unfortunately, the quota for sending emails for the day has been exhausted. Please try again tomorrow.\n We duly apologize for any inconvenience caused.");
+    throw "shown";
+  }
+}
