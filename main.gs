@@ -19,7 +19,7 @@ function showSidebarMailer() {
     .evaluate()
     .setTitle("Receipt Printer with Mail Merge");
   SpreadsheetApp.getUi().showSidebar(html);
-//  ui.alert("Welcome to Receipt Printer. A wizard on the left will guide you through the proccess of printing your receipts and then mailing them.", ui.ButtonSet.OK);
+  ui.alert("Welcome to Receipt Printer. A wizard on the left will guide you through the proccess of printing your receipts and then mailing them.", ui.ButtonSet.OK);
 }
 
 // Before calling hide, it sets the active sheet to the given sheet containing the Receipt Template
