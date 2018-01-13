@@ -1,7 +1,7 @@
 // This is the mailer's main file
 
 function testfinished(){
-//  finished("C13", "F13", "I5", 1456, "Add-On/Receipts", "I5,C7", true);
+  finished("C13", "F13", "I5", 1456, "Add-On/Receipts", "I5,C9", true);
   SpreadsheetApp.getActiveSheet().getRange("I5").setValue(1455);
   Logger.log(MailApp.getRemainingDailyQuota());
 }
@@ -16,7 +16,7 @@ function finished(number, amount, uid, final, path, structure, sendEmail) {
       path: String: Destination path for the files created
       structure: String: Structure of filename (ex: I5,C7 will result a filename: val(I5) + val(C7) + '.pdf')
       sendEmail: Boolean: true if an email with the file as attachment should be sent, false otherwise
-
+      
   This is called by mail.html once the user click on the Finish button. It handles everything after the user input stage
   */
   var struct = null;
@@ -43,12 +43,12 @@ function finished(number, amount, uid, final, path, structure, sendEmail) {
 }
 
 function looper(number, amount, uid, final, folder, struct, sendEmail, varsLocs) {
-  /*
+  /* 
   Inputs: same as finished() except for:
           struct: an array of all the cells previously comma-separated.
           folder: the folder object from the earlier path.
           varsLocs: an object consisting of the indices of the variables required for emailing.
-
+          
   The looper which iterates through all the unique numbers and calls pdfMail() on all of them
   */
   var filenameCount = 1,  // The number to use to name a file if no struct is given
@@ -61,7 +61,7 @@ function looper(number, amount, uid, final, folder, struct, sendEmail, varsLocs)
   mailing.data = ss.getSheetByName("Mail Merge").getDataRange().getValues();  // This data object is used by createTextFromTemplate() and email()
   mailing.template = ss.getSheetByName("Text").getRange("A2").getValue();  // The template the user entered in the Text sheet
   mailing.subject = ss.getSheetByName("Text").getRange("A1").getValue();   // The subject the user entered
-
+  
   while (value <= final) {  // Loop until you reach final+1
     // Set the amount in words
     setINR(number, amount);
@@ -91,11 +91,11 @@ function looper(number, amount, uid, final, folder, struct, sendEmail, varsLocs)
     // Once generated, change the UID to the next value
     value++;
     mailing.varsLocs["uid"]++;
-    cell.setValue(value);
+    cell.setValue(value); 
   }
 }
 
-//
+// 
 function pdfMail(folder, filename, id, sendEmail, mailing){
   /*
   Inputs:
@@ -104,14 +104,14 @@ function pdfMail(folder, filename, id, sendEmail, mailing){
       id: Number: the current unique code
       sendEmail: Boolean: whether or not an email with the pdf should be sent
       mailing: An object passed onto email(). See email() for more info
-
+      
   The pdf generator. Makes a pdf and then emails it and saves it if necessary
   */
   var ss = SpreadsheetApp.getActive();
   // Creates the pdf blob
   var pdfFile = DriveApp.getFileById(ss.getId()),
       pdf = pdfFile.getAs('application/pdf');
-  pdf.setName(filename);
+  pdf.setName(filename+".pdf");
   // Calls email if it should send an email
   if (sendEmail) {
     email(pdf, id, mailing);
@@ -124,8 +124,8 @@ function pdfMail(folder, filename, id, sendEmail, mailing){
 
 
 function email(attach, id, mailing){
-  /*
-  Inputs:
+  /* 
+  Inputs: 
       attach: A blob containing the pdf
       id: the current unique code in use (ex: 1456)
       mailing: an object passed on from looper(). It contains:
@@ -133,7 +133,7 @@ function email(attach, id, mailing){
         data: the data of the Mail Merge sheet as a 2D array
         template: the template for sending emails
         subject: the subject of those emails
-
+      
   The heart of this file is the email function
   This is the mailing function which sends the mail to the recipients with the attachment attach.
   */
@@ -158,17 +158,15 @@ function email(attach, id, mailing){
   }
   bcc = mailing.data[currRow][mailing.varsLocs["bcc"]].replace(/\s/g, "");
   options = {attachments:[attach], cc: cc, bcc: bcc};
-  try {
-    MailApp.sendEmail(emailTo, subject, message, options);
-    /*
-      Logger.log("Sending emailTo: " + emailTo + " with subject: " + subject + " with options: ")
-      Logger.log(options);
-      Logger.log("\n");
-      Logger.log(message);
-    */
-  }
-  catch(e) {
-    failed("Unfortunately, the quota for sending emails for the day has been exhausted. Please try again tomorrow.\n We duly apologize for any inconvenience caused.");
+  if (MailApp.getRemainingDailyQuota() == 0) {
+    failed("Unfortunately, the quota for sending emails for the day has been exhausted. Please try again tomorrow.\n We duly apologize for any inconvenience caused.")
     throw "shown";
   }
-}
+  try {
+    MailApp.sendEmail(emailTo, subject, message, options);
+  }
+  catch(e) {
+    failed("An error has occurred while sending the email. Please contact the developers or try again later.");
+    throw "shown";
+  }
+} 
