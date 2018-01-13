@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!-- Use this CSS stylesheet to ensure that add-ons styling
+  <!-- Use this CSS stylesheet to ensure that add-ons styling 
          matches the default Google Docs styles -->
   <link href="https://ssl.gstatic.com/docs/script/css/add-ons.css" rel="stylesheet">
   <style>
     input.required {
       background-color: rgba(255, 154, 146, 0.3);
-
+      
     }
     input.optional {
       background-color: rgba(101, 191, 208, 0.15);
     }
-
+    
     code {
         font-family: monospace;
         padding: 0;
@@ -23,23 +23,23 @@
         background-color: rgba(27,31,35,0.05);
         border-radius: 3px;
      }
-
+     
     code.green {
       background-color: rgba(41, 105, 29, 0.6);
       color: white;
     }
-
+    
     code.blue {
       background-color: rgba(77, 144, 254, 0.8);
       color: white;
     }
-
+      
     code::before,
     code::after {
       letter-spacing: -0.2em;
       content: "\00a0";
     }
-
+    
     span.red {
       color: #dd4b39;
     }
@@ -135,7 +135,7 @@
       <b style="color: #6495ed"> Only these sheets will be used by the script.</b>
     </p>
     <button class="blue" id="prev1">Previous Page</button>
-    <button class="blue" id="generate">Generate Mail Merge Sheets</button>
+    <button class="blue" id="generate">Generate Mail Merge Sheets</button> 
     <!--<button class="red" id="debug">Debug</button>-->
     <p id="wait"> <b> <font color="6495ed"> Please wait for a moment....</font> </b> </p>
     <div class="rest">
@@ -202,22 +202,22 @@ $(document).ready(function () {
         google.script.run.failed("Couldn't switch to the receipt template sheet. Please retry or try again later.");
       }).setAsActive(activeSheet);
   }
-
+  
   // Hides these initially
   $(".mailmerge").hide();
   $(".rest").hide();
   $("#wait").hide();
   $(".MM").hide();
-
-  // When clicked, it executes finish() depending on which button is clicked.
+  
+  // When clicked, it executes finish() depending on which button is clicked. 
   $("#finish").click(function () {
     finishBoth(true);
   });
-
+  
   $("#finishNormal").click(function () {
     finishBoth(false);
   });
-
+  
   // Goes to the next page i.e. hides receipt and shows mailmerge
   $("#next, #nextNormal").click(function () {
     $('.receipt').toggle();
@@ -238,7 +238,7 @@ $(document).ready(function () {
       $("#wait").hide();
     }).generateSheetsForMail();
   });
-
+  
   // Debugging button
   $("#debug").click(function() {
     $("#number").val("C13");
@@ -285,7 +285,7 @@ $(".optional").click(function() {
 $(".fetch, .fetchData").on("keydown", function(e) {
   id = this.id;
   cont = false;
-  if (e.which === 46 || e.which == 27)
+  if (e.which === 46 || e.which == 27) 
     $(this).val("");
 });
 
@@ -361,7 +361,7 @@ $(".green").click(function () {
     }
     $(this).parent().closest('div').hide();
   } else if ($(this).hasClass("required")){
-    if ($(this).parent().closest('div').find("input").val() == ""){
+    if ($(this).parent().closest('div').find("input").val() === ""){
       google.script.run.failed("Please enter a value into the red input box");
     }
     else {
